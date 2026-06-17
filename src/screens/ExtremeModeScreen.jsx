@@ -208,9 +208,6 @@ export default function ExtremeModeScreen({ assignments, positionData, venue, te
               {phase === 'feedback' && correct && (
                 <div className="pp-result-panel">
                   <h2 className="pp-correct">CORRECT!</h2>
-                  <button className="pp-btn primary full" onClick={handleNextStep}>
-                    {stepIndex + 1 >= PLACEMENT_ORDER.length ? 'CONTINUE' : 'NEXT PLAYER'}
-                  </button>
                 </div>
               )}
             </>
@@ -220,23 +217,35 @@ export default function ExtremeModeScreen({ assignments, positionData, venue, te
             <div className="pp-result-panel">
               <h2 className="pp-incorrect">NOT QUITE</h2>
               <p className="pp-hint">{livesLeft} mistake(s) left before it's game over.</p>
-              <button className="pp-btn primary full" onClick={handleRetrySlot}>TRY AGAIN</button>
-            </div>
-          )}
-
-          {phase === 'situation_clear' && (
-            <div className="pp-result-panel">
-              <button className="pp-btn primary full" onClick={handleContinueToNextSituation}>NEXT SITUATION →</button>
-            </div>
-          )}
-
-          {phase === 'gameover' && (
-            <div className="pp-result-panel">
-              <button className="pp-btn primary full" onClick={handleRestartRun}>TRY AGAIN</button>
-              <button className="pp-btn full" onClick={onExit}>BACK TO MATCH</button>
             </div>
           )}
         </div>
+
+        {/* Footer: pinned outside the scrollable area so the primary action
+            is always reachable without scrolling, even on short phones. */}
+        {phase === 'feedback' && correct && (
+          <div className="pp-sidebar-footer">
+            <button className="pp-btn primary full" onClick={handleNextStep}>
+              {stepIndex + 1 >= PLACEMENT_ORDER.length ? 'CONTINUE' : 'NEXT PLAYER'}
+            </button>
+          </div>
+        )}
+        {phase === 'feedback' && !correct && (
+          <div className="pp-sidebar-footer">
+            <button className="pp-btn primary full" onClick={handleRetrySlot}>TRY AGAIN</button>
+          </div>
+        )}
+        {phase === 'situation_clear' && (
+          <div className="pp-sidebar-footer">
+            <button className="pp-btn primary full" onClick={handleContinueToNextSituation}>NEXT SITUATION →</button>
+          </div>
+        )}
+        {phase === 'gameover' && (
+          <div className="pp-sidebar-footer">
+            <button className="pp-btn primary full" onClick={handleRestartRun}>TRY AGAIN</button>
+            <button className="pp-btn full" onClick={onExit}>BACK TO MATCH</button>
+          </div>
+        )}
       </div>
     </div>
   );

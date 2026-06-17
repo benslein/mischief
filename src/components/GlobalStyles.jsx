@@ -210,6 +210,18 @@ export default function GlobalStyles() {
       .pp-sidebar-inner::-webkit-scrollbar { width: 4px; }
       .pp-sidebar-inner::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 2px; }
 
+      /* Sits below .pp-sidebar-inner, outside the scrollable area, so the
+         primary action button (Next Question, etc.) is always on-screen
+         and never requires scrolling to reach - even on short phones. */
+      .pp-sidebar-footer {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        padding-top: 0;
+      }
+
       /* On phone-width screens, the field/free-kick view and the question
          sidebar stack instead of sitting side by side - the sidebar (with
          the question text and buttons) goes on top, sized to its content,

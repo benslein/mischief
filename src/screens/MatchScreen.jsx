@@ -240,6 +240,46 @@ export default function MatchScreen({ assignments, positionData, questionBank, v
 
           <hr className="pp-divider" />
 
+          {/* Question phase */}
+          {phase !== 'freekick' && phase !== 'fulltime' && (
+            <>
+              <p className="pp-question-prompt">
+                {question.type === 'terminology' && question.term && <b>{question.term}: </b>}
+                {question.prompt}
+              </p>
+              {phase === 'question' && <p className="pp-hint" style={{ color: 'var(--accent)', fontSize: '11px' }}>👆 Tap the field to answer</p>}
+              {phase === 'feedback' && (
+                <div className="pp-result-panel">
+                  <h2 className={correct ? 'pp-correct' : 'pp-incorrect'}>{correct ? 'CORRECT!' : 'NOT QUITE'}</h2>
+                  {opponentScored && <p className="pp-opponent-score">Unmarked space — they score!</p>}
+                  {pendingFreeKick && <p>3 in a row! Free kick earned.</p>}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Free kick phase */}
+          {phase === 'freekick' && (
+            <>
+              <p className="pp-hint">{freekick.pick ? '' : 'Pick a side of the goal.'}</p>
+              {!freekick.pick && (
+                <div className="pp-chip-row" style={{ justifyContent: 'center' }}>
+                  {FK_ZONES.map((z) => (
+                    <button key={z} className="pp-btn" style={{ flex: 1, justifyContent: 'center' }} onClick={() => handleFreeKickPick(z)}>
+                      {z === 'L' ? '← LEFT' : z === 'R' ? 'RIGHT →' : 'CENTER'}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {freekick.pick && (
+                <div className="pp-result-panel">
+                  {isGoal && <Confetti count={24} />}
+                  <h2 className={isGoal ? 'pp-correct' : 'pp-incorrect'}>{isGoal ? 'GOAL!' : 'SAVED!'}</h2>
+                </div>
+              )}
+            </>
+          )}
+
           {/* Full time */}
           {phase === 'fulltime' && (
             <div className="pp-result-panel">
@@ -269,52 +309,27 @@ export default function MatchScreen({ assignments, positionData, questionBank, v
                   {' '}<span className="pp-record-d">{record.draws}D</span>
                 </p>
               )}
-              <button className="pp-btn primary full" onClick={handleRestart}>PLAY AGAIN</button>
             </div>
           )}
-
-          {/* Question phase */}
-          {phase !== 'freekick' && phase !== 'fulltime' && (
-            <>
-              <p className="pp-question-prompt">
-                {question.type === 'terminology' && question.term && <b>{question.term}: </b>}
-                {question.prompt}
-              </p>
-              {phase === 'question' && <p className="pp-hint" style={{ color: 'var(--accent)', fontSize: '11px' }}>👆 Tap the field to answer</p>}
-              {phase === 'feedback' && (
-                <div className="pp-result-panel">
-                  <h2 className={correct ? 'pp-correct' : 'pp-incorrect'}>{correct ? 'CORRECT!' : 'NOT QUITE'}</h2>
-                  {opponentScored && <p className="pp-opponent-score">Unmarked space — they score!</p>}
-                  {pendingFreeKick && <p>3 in a row! Free kick earned.</p>}
-                  <button className="pp-btn primary full" onClick={handleContinue}>
-                    {pendingFreeKick ? 'TAKE FREE KICK' : 'NEXT QUESTION'}
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Free kick phase */}
-          {phase === 'freekick' && (
-            <>
-              <p className="pp-hint">{freekick.pick ? '' : 'Pick a side of the goal.'}</p>
-              <div className="pp-chip-row" style={{ justifyContent: 'center' }}>
-                {!freekick.pick && FK_ZONES.map((z) => (
-                  <button key={z} className="pp-btn" style={{ flex: 1, justifyContent: 'center' }} onClick={() => handleFreeKickPick(z)}>
-                    {z === 'L' ? '← LEFT' : z === 'R' ? 'RIGHT →' : 'CENTER'}
-                  </button>
-                ))}
-              </div>
-              {freekick.pick && (
-                <div className="pp-result-panel">
-                  {isGoal && <Confetti count={24} />}
-                  <h2 className={isGoal ? 'pp-correct' : 'pp-incorrect'}>{isGoal ? 'GOAL!' : 'SAVED!'}</h2>
-                  <button className="pp-btn primary full" onClick={proceedAfterFeedback}>NEXT QUESTION</button>
-                </div>
-              )}
-            </>
-          )}
         </div>
+
+        {/* Footer: pinned outside the scrollable area so the primary action
+            is always reachable without scrolling, even on short phones. */}
+        {(phase === 'feedback' || (phase === 'freekick' && freekick.pick) || phase === 'fulltime') && (
+          <div className="pp-sidebar-footer">
+            {phase === 'feedback' && (
+              <button className="pp-btn primary full" onClick={handleContinue}>
+                {pendingFreeKick ? 'TAKE FREE KICK' : 'NEXT QUESTION'}
+              </button>
+            )}
+            {phase === 'freekick' && freekick.pick && (
+              <button className="pp-btn primary full" onClick={proceedAfterFeedback}>NEXT QUESTION</button>
+            )}
+            {phase === 'fulltime' && (
+              <button className="pp-btn primary full" onClick={handleRestart}>PLAY AGAIN</button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
