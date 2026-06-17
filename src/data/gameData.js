@@ -1908,3 +1908,25 @@ export const VENUES = [
   },
 ];
 export const DEFAULT_VENUE_ID = VENUES[0].id;
+
+/* =========================================================================
+   TEAMS
+   A profile can save multiple teams, each with its own roster, kit, home
+   field, win/loss/draw record, and whether it has ever beaten Extreme
+   Mode. createBlankTeam() is the starting point both for "create a new
+   team" and as the shape every saved team is expected to have.
+   ========================================================================= */
+
+export function createBlankTeam() {
+  return {
+    id: `team-${Date.now()}-${Math.floor(Math.random() * 1e6)}`,
+    teamName: '',
+    assignments: {},
+    venue: DEFAULT_VENUE_ID,
+    jerseyId: DEFAULT_JERSEY_ID,
+    shortsId: DEFAULT_SHORTS_ID,
+    unlockedIds: [],
+    record: { wins: 0, losses: 0, draws: 0 },
+    beatExtreme: false,
+  };
+}

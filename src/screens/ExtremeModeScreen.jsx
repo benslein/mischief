@@ -15,7 +15,7 @@ import ChampionScreen from './ChampionScreen.jsx';
    free-kick loop, since the whole point is a focused, harder rep.
    ========================================================================= */
 
-export default function ExtremeModeScreen({ assignments, positionData, venue, teamKit, onExit }) {
+export default function ExtremeModeScreen({ assignments, positionData, venue, teamKit, onExit, onBeatExtreme }) {
   const W = 300, H = 440;
   const MAX_MISTAKES = 3;
   // Ball is auto-placed (shown correctly from the start of every
@@ -76,6 +76,7 @@ export default function ExtremeModeScreen({ assignments, positionData, venue, te
     setCorrect(null);
     if (isLastSlot) {
       const isLastSituation = situationIndex + 1 >= queue.length;
+      if (isLastSituation && onBeatExtreme) onBeatExtreme();
       setPhase(isLastSituation ? 'champion' : 'situation_clear');
     } else {
       setStepIndex((i) => i + 1);

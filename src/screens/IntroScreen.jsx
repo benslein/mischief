@@ -5,16 +5,15 @@ import DancingRow from '../components/DancingRow.jsx';
 
 /* =========================================================================
    INTRO SCREEN
-   Title screen with two entry paths (pick a new squad, or jump straight
-   into a match with whatever squad is already saved) plus an original
-   chiptune fanfare. The Coach tab is intentionally not offered here - it's
-   reachable only via the small link tucked in the corner, once inside the
-   app, so it stays out of the way for kids just picking teams and playing.
+   Title screen with two entry paths (jump straight into a random match, or
+   open the team manager) plus an original chiptune fanfare. The Coach tab
+   is intentionally not offered here - it's reachable only via the small
+   link tucked in the corner, once inside the app, so it stays out of the
+   way for kids just picking teams and playing.
    ========================================================================= */
 
-export default function IntroScreen({ teamName, hasFullSquad, record, teamKit, onPickTeam, onPlayMatch, onQuickStart, onPlayExtreme }) {
+export default function IntroScreen({ profileName, onOpenTeams, onQuickStart, onSwitchProfile }) {
   const themeRef = useRef(null);
-  const gamesPlayed = record.wins + record.losses + record.draws;
 
   useEffect(() => {
     themeRef.current = startIntroTheme();
@@ -34,7 +33,7 @@ export default function IntroScreen({ teamName, hasFullSquad, record, teamKit, o
   return (
     <div className="pp-intro">
       <div className="pp-intro-content">
-        <DancingRow count={4} kit={(colors) => kitColors(colors, teamKit)} />
+        <DancingRow count={4} kit={kitColors} />
 
         <div className="pp-intro-card">
           <div className="pp-intro-balls">
@@ -42,37 +41,25 @@ export default function IntroScreen({ teamName, hasFullSquad, record, teamKit, o
             <PixelBall size={40} />
           </div>
           <h1 className="pp-pixel pp-intro-title">PIXEL PITCH FC</h1>
-          <p className="pp-intro-welcome">Welcome to Pixel Pitch FC!</p>
+          <p className="pp-intro-welcome">Welcome back, {profileName}!</p>
           <p className="pp-hint">Learn positions and soccer terms, then take it to Match Day.</p>
-          {gamesPlayed > 0 && (
-            <p className="pp-intro-record">
-              ALL-TIME RECORD: <span className="pp-record-w">{record.wins}W</span>
-              {' '}<span className="pp-record-l">{record.losses}L</span>
-              {' '}<span className="pp-record-d">{record.draws}D</span>
-            </p>
-          )}
 
           <div className="pp-intro-actions">
             <button className="pp-btn primary full" onClick={() => handleSelect(onQuickStart)}>
               ⚡ QUICK START (RANDOM TEAM)
             </button>
-            <button className="pp-btn full" onClick={() => handleSelect(onPickTeam)}>
-              CREATE A TEAM
+            <button className="pp-btn full" onClick={() => handleSelect(onOpenTeams)}>
+              MY TEAMS
             </button>
-            <button
-              className="pp-btn full"
-              disabled={!hasFullSquad}
-              onClick={() => handleSelect(onPlayMatch)}
-              title={hasFullSquad ? `Play as ${teamName}` : 'Pick a full squad first'}
-            >
-              {hasFullSquad ? `PLAY AS ${teamName}` : 'PLAY MATCH (PICK A SQUAD FIRST)'}
-            </button>
-            {hasFullSquad && (
-              <button className="pp-btn full pp-btn-extreme" onClick={() => handleSelect(onPlayExtreme)}>
-                ⚠ EXTREME MODE
-              </button>
-            )}
           </div>
+
+          <button
+            className="pp-hint"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            onClick={() => handleSelect(onSwitchProfile)}
+          >
+            Not {profileName}? Switch Player
+          </button>
         </div>
 
         <DancingRow count={4} kit={awayKitColors} reverseDelay />

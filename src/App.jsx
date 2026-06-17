@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
 import {
-  DEFAULT_JERSEY_ID, DEFAULT_POSITION_DATA, DEFAULT_QUESTION_BANK, DEFAULT_SHORTS_ID, DEFAULT_VENUE_ID,
-  FORMATION_2_3_1, ROSTER, UNLOCKABLE_ROSTER, VENUES,
+  DEFAULT_POSITION_DATA, DEFAULT_QUESTION_BANK,
+  FORMATION_2_3_1, ROSTER, UNLOCKABLE_ROSTER, VENUES, createBlankTeam,
 } from './data/gameData.js';
-import { loadJSON, saveJSON } from './utils/storage.js';
+import {
+  clearCurrentProfileName, getCurrentProfileName, listProfiles,
+  loadProfileData, saveProfileData, setCurrentProfileName,
+} from './utils/storage.js';
 import { buildTeamKit, PixelBall } from './utils/sprites.jsx';
 import GlobalStyles from './components/GlobalStyles.jsx';
+import ProfileScreen from './screens/ProfileScreen.jsx';
 import IntroScreen from './screens/IntroScreen.jsx';
+import TeamsScreen from './screens/TeamsScreen.jsx';
 import TeamNameScreen from './screens/TeamNameScreen.jsx';
 import KitScreen from './screens/KitScreen.jsx';
 import VenueScreen from './screens/VenueScreen.jsx';
@@ -20,103 +25,148 @@ import ExtremeModeScreen from './screens/ExtremeModeScreen.jsx';
    ========================================================================= */
 
 export default function App() {
+  const [profileName, setProfileName] = useState(() => getCurrentProfileName());
+  const [profiles, setProfiles] = useState(() => listProfiles());
   const [loaded, setLoaded] = useState(false);
   const [screen, setScreen] = useState('intro');
-  const [teamName, setTeamName] = useState('THE COMETS');
-  const [assignments, setAssignments] = useState({});
+  const [teams, setTeams] = useState([]);
+  const [activeTeamId, setActiveTeamId] = useState(null);
+  // Ephemeral "Quick Start" team - random squad/venue/kit, played instantly
+  // and never saved into the profile's team list, so it doesn't clutter
+  // My Teams with throwaway one-off squads.
+  const [quickStartTeam, setQuickStartTeam] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
-  const [positionData, setPositionData] = useState({});
+  const [positionData, setPositionData] = useState(DEFAULT_POSITION_DATA);
   const [questionBank, setQuestionBank] = useState(DEFAULT_QUESTION_BANK);
-  const [venue, setVenue] = useState(DEFAULT_VENUE_ID);
-  const [jerseyId, setJerseyId] = useState(DEFAULT_JERSEY_ID);
-  const [shortsId, setShortsId] = useState(DEFAULT_SHORTS_ID);
-  const [record, setRecord] = useState({ wins: 0, losses: 0, draws: 0 });
-  const [unlockedIds, setUnlockedIds] = useState([]);
   // Set right when a win triggers a fresh unlock, so MatchScreen's full-time
   // panel can show "NEW PLAYER UNLOCKED!" for that one player. Cleared again
   // on the next match restart so it doesn't linger into a future win.
   const [newlyUnlocked, setNewlyUnlocked] = useState(null);
-  const teamKit = buildTeamKit(jerseyId, shortsId);
+
+  const activeTeam = activeTeamId ? teams.find((t) => t.id === activeTeamId) : quickStartTeam;
+  const teamKit = buildTeamKit(activeTeam?.jerseyId, activeTeam?.shortsId);
+
+  // Routes every roster/kit/venue/name edit through to whichever team is
+  // currently "in focus" - a saved team (by id) during normal play/editing,
+  // or the ephemeral Quick Start team. Both the team-creation wizard and
+  // live squad editing share this same path.
+  function updateActiveTeam(updater) {
+    if (activeTeamId) {
+      setTeams((prev) => prev.map((t) => (t.id === activeTeamId ? updater(t) : t)));
+    } else if (quickStartTeam) {
+      setQuickStartTeam((prev) => updater(prev));
+    }
+  }
+
+  // Loads this profile's saved teams + coach data the moment a profile is
+  // chosen, and resets to a clean slate when switching away from one.
+  useEffect(() => {
+    if (!profileName) {
+      setLoaded(false);
+      return;
+    }
+    const data = loadProfileData(profileName, null);
+    setTeams(data?.teams || []);
+    setPositionData(data?.positionData || DEFAULT_POSITION_DATA);
+    setQuestionBank(data?.questionBank || DEFAULT_QUESTION_BANK);
+    setActiveTeamId(null);
+    setQuickStartTeam(null);
+    setScreen('intro');
+    setLoaded(true);
+  }, [profileName]);
 
   useEffect(() => {
-    (async () => {
-      const squad = await loadJSON('squad', null);
-      if (squad) {
-        if (squad.teamName) setTeamName(squad.teamName);
-        if (squad.assignments) setAssignments(squad.assignments);
-        if (squad.venue) setVenue(squad.venue);
-        if (squad.jerseyId) setJerseyId(squad.jerseyId);
-        if (squad.shortsId) setShortsId(squad.shortsId);
-      }
-      const positions = await loadJSON('coach-positions', DEFAULT_POSITION_DATA);
-      setPositionData(positions);
-      const bank = await loadJSON('question-bank', DEFAULT_QUESTION_BANK);
-      setQuestionBank(bank);
-      const savedRecord = await loadJSON('team-record', { wins: 0, losses: 0, draws: 0 });
-      setRecord(savedRecord);
-      const savedUnlocks = await loadJSON('unlocked-players', []);
-      setUnlockedIds(savedUnlocks);
-      setLoaded(true);
-    })();
-  }, []);
+    if (!loaded || !profileName) return;
+    saveProfileData(profileName, { teams, positionData, questionBank });
+  }, [loaded, profileName, teams, positionData, questionBank]);
 
-  useEffect(() => { if (!loaded) return; saveJSON('squad', { teamName, assignments, venue, jerseyId, shortsId }); }, [loaded, teamName, assignments, venue, jerseyId, shortsId]);
-  useEffect(() => { if (!loaded) return; saveJSON('coach-positions', positionData); }, [loaded, positionData]);
-  useEffect(() => { if (!loaded) return; saveJSON('question-bank', questionBank); }, [loaded, questionBank]);
-  useEffect(() => { if (!loaded) return; saveJSON('team-record', record); }, [loaded, record]);
-  useEffect(() => { if (!loaded) return; saveJSON('unlocked-players', unlockedIds); }, [loaded, unlockedIds]);
+  function handleChooseProfile(name) {
+    setCurrentProfileName(name);
+    setProfiles(listProfiles());
+    setProfileName(name);
+  }
+  function handleSwitchProfile() {
+    clearCurrentProfileName();
+    setProfileName(null);
+  }
 
   function handleCardClick(id) { setSelectedId((prev) => (prev === id ? null : id)); }
   function handleSlotClick(slotId) {
-    setAssignments((prev) => {
-      const next = { ...prev };
+    updateActiveTeam((team) => {
+      const next = { ...team.assignments };
       if (selectedId) { next[slotId] = selectedId; } else { delete next[slotId]; }
-      return next;
+      return { ...team, assignments: next };
     });
     setSelectedId(null);
   }
   function handleAutoFill() {
-    setAssignments((prev) => {
-      const next = { ...prev };
+    updateActiveTeam((team) => {
+      const next = { ...team.assignments };
       const used = new Set(Object.values(next));
       const pool = ROSTER.filter((c) => !used.has(c.id)).map((c) => c.id);
       for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
       FORMATION_2_3_1.forEach((slot) => { if (!next[slot.id] && pool.length) next[slot.id] = pool.pop(); });
-      return next;
+      return { ...team, assignments: next };
     });
     setSelectedId(null);
   }
-  function handleClear() { setAssignments({}); setSelectedId(null); }
-
-  // "Create a Team" always starts from a clean slate - empty name prompt,
-  // empty squad - rather than pre-filling whatever was last saved, since
-  // the whole point of this flow is building a new team from scratch.
-  // (Quick Start and "Play As {team}" are the paths for reusing an
-  // existing team, so this doesn't touch those.)
-  function handleStartCreateTeam() {
-    setTeamName('');
-    setAssignments({});
+  function handleClear() {
+    updateActiveTeam((team) => ({ ...team, assignments: {} }));
     setSelectedId(null);
-    setJerseyId(DEFAULT_JERSEY_ID);
-    setShortsId(DEFAULT_SHORTS_ID);
+  }
+
+  // Starts a brand new team: a blank team is added to the profile's team
+  // list right away (so the rest of the wizard can just edit "the active
+  // team" the same way live squad editing does) and walked through
+  // Name -> Squad -> Kit -> Venue.
+  function handleStartCreateTeam() {
+    const team = createBlankTeam();
+    setTeams((prev) => [...prev, team]);
+    setActiveTeamId(team.id);
+    setSelectedId(null);
     setScreen('create_name');
   }
 
-  // Quick Start (intro screen) - builds a fresh random full squad regardless
-  // of whatever's currently assigned, then drops straight into Match Day.
-  // Distinct from handleAutoFill, which only fills gaps and is meant for
-  // the Squad screen where the player may have already hand-picked some
-  // positions they don't want disturbed.
+  // Backing out before naming the team discards it rather than leaving a
+  // nameless placeholder cluttering My Teams.
+  function handleBackFromTeamName() {
+    setTeams((prev) => prev.filter((t) => !(t.id === activeTeamId && !t.teamName.trim())));
+    setActiveTeamId(null);
+    setScreen('teams');
+  }
+
+  function handleEditTeam(teamId) {
+    setActiveTeamId(teamId);
+    setSelectedId(null);
+    setScreen('squad');
+  }
+  function handlePlayTeam(teamId) { setActiveTeamId(teamId); setScreen('match'); }
+  function handlePlayExtremeTeam(teamId) { setActiveTeamId(teamId); setScreen('extreme'); }
+  function handleDeleteTeam(teamId) {
+    if (typeof window !== 'undefined' && !window.confirm('Delete this team? This cannot be undone.')) return;
+    setTeams((prev) => prev.filter((t) => t.id !== teamId));
+    if (activeTeamId === teamId) setActiveTeamId(null);
+  }
+
+  // Quick Start - builds a fresh random full squad and drops straight into
+  // Match Day without ever touching the saved team list. Distinct from
+  // handleAutoFill, which only fills gaps in whichever team is active.
   function handleQuickStart() {
     const pool = ROSTER.map((c) => c.id);
     for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
     const next = {};
     FORMATION_2_3_1.forEach((slot) => { next[slot.id] = pool.pop(); });
-    setAssignments(next);
-    setSelectedId(null);
-    setVenue(VENUES[Math.floor(Math.random() * VENUES.length)].id);
+    setQuickStartTeam({
+      ...createBlankTeam(),
+      id: 'quick-start',
+      teamName: 'QUICK START',
+      assignments: next,
+      venue: VENUES[Math.floor(Math.random() * VENUES.length)].id,
+    });
+    setActiveTeamId(null);
     setScreen('match');
   }
+
   function handleUpdatePosition(situationId, slotId, pct) {
     setPositionData((prev) => ({ ...prev, [situationId]: { ...(prev[situationId] || {}), [slotId]: pct } }));
   }
@@ -135,33 +185,42 @@ export default function App() {
     setQuestionBank(importedQuestionBank?.length ? importedQuestionBank : DEFAULT_QUESTION_BANK);
   }
 
-  // Tracks the team's all-time win/loss/draw record across every completed
-  // match (any full 90 minutes played to the end), persisted independently
-  // of squad/venue so starting a new "Create a Team" doesn't reset it.
+  // Tracks the active team's all-time win/loss/draw record across every
+  // completed match (any full 90 minutes played to the end), and reveals
+  // the next unlockable player on a win - both kept per-team so each
+  // team's progress is its own.
   function handleMatchComplete(result) {
-    setRecord((prev) => ({
-      wins: prev.wins + (result === 'win' ? 1 : 0),
-      losses: prev.losses + (result === 'loss' ? 1 : 0),
-      draws: prev.draws + (result === 'draw' ? 1 : 0),
-    }));
-
+    if (!activeTeam) return;
+    let unlockId = null;
     if (result === 'win') {
-      // Reveal the next not-yet-unlocked player in a fixed order, so
-      // progress always feels like steady forward motion rather than a
-      // re-roll that might "waste" a win on a repeat. Once all 8 are
-      // unlocked, wins just stay wins - no banner, nothing left to reveal.
-      setUnlockedIds((prev) => {
-        const next = UNLOCKABLE_ROSTER.find((p) => !prev.includes(p.id));
-        if (!next) {
-          setNewlyUnlocked(null);
-          return prev;
-        }
-        setNewlyUnlocked(next.id);
-        return [...prev, next.id];
-      });
-    } else {
-      setNewlyUnlocked(null);
+      const next = UNLOCKABLE_ROSTER.find((p) => !activeTeam.unlockedIds.includes(p.id));
+      unlockId = next ? next.id : null;
     }
+    setNewlyUnlocked(unlockId);
+    updateActiveTeam((team) => ({
+      ...team,
+      record: {
+        wins: team.record.wins + (result === 'win' ? 1 : 0),
+        losses: team.record.losses + (result === 'loss' ? 1 : 0),
+        draws: team.record.draws + (result === 'draw' ? 1 : 0),
+      },
+      unlockedIds: unlockId ? [...team.unlockedIds, unlockId] : team.unlockedIds,
+    }));
+  }
+
+  // Beating all 8 Extreme Mode situations marks the active team as having
+  // done so, for good, even if a later run falls short.
+  function handleBeatExtreme() {
+    updateActiveTeam((team) => (team.beatExtreme ? team : { ...team, beatExtreme: true }));
+  }
+
+  if (!profileName) {
+    return (
+      <div className="pp-app">
+        <GlobalStyles />
+        <ProfileScreen profiles={profiles} onChooseProfile={handleChooseProfile} />
+      </div>
+    );
   }
 
   if (!loaded) {
@@ -173,21 +232,35 @@ export default function App() {
     );
   }
 
-  const hasFullSquad = Object.keys(assignments).length === 7;
+  const hasFullSquad = activeTeam ? Object.keys(activeTeam.assignments).length === 7 : false;
 
   if (screen === 'intro') {
     return (
       <div className="pp-app">
         <GlobalStyles />
         <IntroScreen
-          teamName={teamName}
-          hasFullSquad={hasFullSquad}
-          record={record}
-          teamKit={teamKit}
-          onPickTeam={handleStartCreateTeam}
-          onPlayMatch={() => setScreen('match')}
+          profileName={profileName}
+          onOpenTeams={() => setScreen('teams')}
           onQuickStart={handleQuickStart}
-          onPlayExtreme={() => setScreen('extreme')}
+          onSwitchProfile={handleSwitchProfile}
+        />
+      </div>
+    );
+  }
+
+  if (screen === 'teams') {
+    return (
+      <div className="pp-app">
+        <GlobalStyles />
+        <TeamsScreen
+          profileName={profileName}
+          teams={teams}
+          onCreateTeam={handleStartCreateTeam}
+          onPlayTeam={handlePlayTeam}
+          onPlayExtreme={handlePlayExtremeTeam}
+          onEditTeam={handleEditTeam}
+          onDeleteTeam={handleDeleteTeam}
+          onBack={() => setScreen('intro')}
         />
       </div>
     );
@@ -198,10 +271,10 @@ export default function App() {
       <div className="pp-app">
         <GlobalStyles />
         <TeamNameScreen
-          teamName={teamName}
-          onChangeName={setTeamName}
+          teamName={activeTeam?.teamName ?? ''}
+          onChangeName={(name) => updateActiveTeam((t) => ({ ...t, teamName: name }))}
           onContinue={() => setScreen('create_squad')}
-          onBack={() => setScreen('intro')}
+          onBack={handleBackFromTeamName}
         />
       </div>
     );
@@ -212,10 +285,10 @@ export default function App() {
       <div className="pp-app">
         <GlobalStyles />
         <KitScreen
-          jerseyId={jerseyId}
-          shortsId={shortsId}
-          onSelectJersey={setJerseyId}
-          onSelectShorts={setShortsId}
+          jerseyId={activeTeam?.jerseyId}
+          shortsId={activeTeam?.shortsId}
+          onSelectJersey={(id) => updateActiveTeam((t) => ({ ...t, jerseyId: id }))}
+          onSelectShorts={(id) => updateActiveTeam((t) => ({ ...t, shortsId: id }))}
           onContinue={() => setScreen('create_venue')}
           onBack={() => setScreen('create_squad')}
         />
@@ -228,8 +301,8 @@ export default function App() {
       <div className="pp-app">
         <GlobalStyles />
         <VenueScreen
-          selectedVenueId={venue}
-          onSelectVenue={setVenue}
+          selectedVenueId={activeTeam?.venue}
+          onSelectVenue={(id) => updateActiveTeam((t) => ({ ...t, venue: id }))}
           onContinue={() => setScreen('match')}
           onBack={() => setScreen('create_kit')}
         />
@@ -249,9 +322,9 @@ export default function App() {
         <span className="pp-topbar-title">PIXEL PITCH FC</span>
         <input
           className="pp-topbar-team"
-          value={teamName}
+          value={activeTeam?.teamName ?? ''}
           maxLength={18}
-          onChange={(e) => setTeamName(e.target.value.toUpperCase())}
+          onChange={(e) => updateActiveTeam((t) => ({ ...t, teamName: e.target.value.toUpperCase() }))}
         />
         <nav className="pp-topbar-nav">
           <button className={`pp-nav-btn${screen === 'squad' || screen === 'create_squad' ? ' active' : ''}`} onClick={() => setScreen('squad')}>SQUAD</button>
@@ -278,18 +351,18 @@ export default function App() {
         </button>
       </header>
 
-      {(screen === 'squad' || screen === 'create_squad') && (
+      {(screen === 'squad' || screen === 'create_squad') && activeTeam && (
         <SquadScreen
-          assignments={assignments}
+          assignments={activeTeam.assignments}
           selectedId={selectedId}
           onCardClick={handleCardClick}
           onSlotClick={handleSlotClick}
           onAutoFill={handleAutoFill}
           onClear={handleClear}
-          venue={venue}
+          venue={activeTeam.venue}
           teamKit={teamKit}
           onContinueToKit={screen === 'create_squad' ? () => setScreen('create_kit') : null}
-          unlockedIds={unlockedIds}
+          unlockedIds={activeTeam.unlockedIds}
         />
       )}
 
@@ -302,17 +375,34 @@ export default function App() {
           onSaveQuestion={handleSaveQuestion}
           onDeleteQuestion={handleDeleteQuestion}
           onImportCoachData={handleImportCoachData}
-          venue={venue}
+          venue={activeTeam?.venue}
           teamKit={teamKit}
         />
       )}
 
-      {screen === 'match' && (
-        <MatchScreen assignments={assignments} positionData={positionData} questionBank={questionBank} venue={venue} teamKit={teamKit} onMatchComplete={handleMatchComplete} record={record} newlyUnlocked={newlyUnlocked} onDismissUnlock={() => setNewlyUnlocked(null)} />
+      {screen === 'match' && activeTeam && (
+        <MatchScreen
+          assignments={activeTeam.assignments}
+          positionData={positionData}
+          questionBank={questionBank}
+          venue={activeTeam.venue}
+          teamKit={teamKit}
+          onMatchComplete={handleMatchComplete}
+          record={activeTeam.record}
+          newlyUnlocked={newlyUnlocked}
+          onDismissUnlock={() => setNewlyUnlocked(null)}
+        />
       )}
 
-      {screen === 'extreme' && (
-        <ExtremeModeScreen assignments={assignments} positionData={positionData} venue={venue} teamKit={teamKit} onExit={() => setScreen('match')} />
+      {screen === 'extreme' && activeTeam && (
+        <ExtremeModeScreen
+          assignments={activeTeam.assignments}
+          positionData={positionData}
+          venue={activeTeam.venue}
+          teamKit={teamKit}
+          onExit={() => setScreen('match')}
+          onBeatExtreme={handleBeatExtreme}
+        />
       )}
     </div>
   );
