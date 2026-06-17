@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import {
   DEFAULT_POSITION_DATA, DEFAULT_QUESTION_BANK,
   FORMATION_2_3_1, ROSTER, UNLOCKABLE_ROSTER, VENUES, createBlankTeam,
@@ -219,6 +220,7 @@ export default function App() {
       <div className="pp-app">
         <GlobalStyles />
         <ProfileScreen profiles={profiles} onChooseProfile={handleChooseProfile} />
+        <Analytics />
       </div>
     );
   }
@@ -228,6 +230,7 @@ export default function App() {
       <div className="pp-app" style={{ alignItems: 'center', justifyContent: 'center' }}>
         <GlobalStyles />
         <p className="pp-pixel" style={{ color: 'var(--accent)' }}>LOADING...</p>
+        <Analytics />
       </div>
     );
   }
@@ -244,6 +247,7 @@ export default function App() {
           onQuickStart={handleQuickStart}
           onSwitchProfile={handleSwitchProfile}
         />
+        <Analytics />
       </div>
     );
   }
@@ -262,6 +266,7 @@ export default function App() {
           onDeleteTeam={handleDeleteTeam}
           onBack={() => setScreen('intro')}
         />
+        <Analytics />
       </div>
     );
   }
@@ -276,6 +281,7 @@ export default function App() {
           onContinue={() => setScreen('create_squad')}
           onBack={handleBackFromTeamName}
         />
+        <Analytics />
       </div>
     );
   }
@@ -292,6 +298,7 @@ export default function App() {
           onContinue={() => setScreen('create_venue')}
           onBack={() => setScreen('create_squad')}
         />
+        <Analytics />
       </div>
     );
   }
@@ -306,6 +313,7 @@ export default function App() {
           onContinue={() => setScreen('match')}
           onBack={() => setScreen('create_kit')}
         />
+        <Analytics />
       </div>
     );
   }
@@ -404,6 +412,7 @@ export default function App() {
           onBeatExtreme={handleBeatExtreme}
         />
       )}
+      <Analytics />
     </div>
   );
 }
