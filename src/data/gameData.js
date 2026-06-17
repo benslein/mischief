@@ -88,10 +88,20 @@ export const FIXED = { K: '#262335', B: '#1a1a2e', M: '#3a1f1f', W: '#ffffff' };
 export const JERSEY_OPTIONS = [
   { id: 'red', label: 'Red Top', color: '#e63946' },
   { id: 'white', label: 'White Top', color: '#ffffff' },
+  { id: 'yellow', label: 'Yellow Top', color: '#ffd166' },
+  { id: 'green', label: 'Green Top', color: '#06d6a0' },
+  { id: 'purple', label: 'Purple Top', color: '#9d4edd' },
+  { id: 'pink', label: 'Pink Top', color: '#ff70a6' },
+  { id: 'black', label: 'Black Top', color: '#1a1a1a' },
 ];
 export const SHORTS_OPTIONS = [
   { id: 'white', label: 'White Shorts', color: '#ffffff' },
   { id: 'red', label: 'Red Shorts', color: '#e63946' },
+  { id: 'yellow', label: 'Yellow Shorts', color: '#ffd166' },
+  { id: 'green', label: 'Green Shorts', color: '#06d6a0' },
+  { id: 'purple', label: 'Purple Shorts', color: '#9d4edd' },
+  { id: 'pink', label: 'Pink Shorts', color: '#ff70a6' },
+  { id: 'black', label: 'Black Shorts', color: '#1a1a1a' },
 ];
 export const DEFAULT_JERSEY_ID = JERSEY_OPTIONS[0].id;
 export const DEFAULT_SHORTS_ID = SHORTS_OPTIONS[0].id;
