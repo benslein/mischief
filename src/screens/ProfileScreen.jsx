@@ -7,7 +7,7 @@ import { useState } from 'react';
    teams and progress separate in this browser's storage.
    ========================================================================= */
 
-export default function ProfileScreen({ profiles, onChooseProfile }) {
+export default function ProfileScreen({ profiles, onChooseProfile, onDeleteProfile }) {
   const [name, setName] = useState('');
   const trimmed = name.trim();
 
@@ -20,9 +20,19 @@ export default function ProfileScreen({ profiles, onChooseProfile }) {
         {profiles.length > 0 && (
           <div className="pp-intro-actions">
             {profiles.map((p) => (
-              <button key={p} className="pp-btn full" onClick={() => onChooseProfile(p)}>
-                {p}
-              </button>
+              <div key={p} className="pp-profile-row">
+                <button className="pp-btn full" onClick={() => onChooseProfile(p)}>
+                  {p}
+                </button>
+                <button
+                  className="pp-btn pp-profile-delete"
+                  onClick={() => onDeleteProfile(p)}
+                  aria-label={`Delete ${p}`}
+                  title={`Delete ${p}`}
+                >
+                  ✕
+                </button>
+              </div>
             ))}
           </div>
         )}

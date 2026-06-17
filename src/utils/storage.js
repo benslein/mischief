@@ -67,3 +67,15 @@ export function saveProfileData(name, data) {
     // best-effort; not fatal if a save fails (e.g. storage full/disabled)
   }
 }
+
+// Removes `name` from the known-profiles list and wipes its saved teams -
+// also clears the "logged in" marker if this was the active profile, since
+// there's nothing left to resume.
+export function deleteProfile(name) {
+  if (!STORAGE_AVAILABLE) return;
+  window.localStorage.setItem(PROFILES_KEY, JSON.stringify(listProfiles().filter((p) => p !== name)));
+  window.localStorage.removeItem(profileDataKey(name));
+  if (getCurrentProfileName() === name) {
+    window.localStorage.removeItem(CURRENT_PROFILE_KEY);
+  }
+}

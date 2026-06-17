@@ -99,6 +99,10 @@ export default function GlobalStyles() {
       .pp-intro-actions .pp-btn { padding: 14px; font-size: 11px; }
       .pp-btn-extreme { color: #e63946; border-color: #e63946; }
       .pp-btn-extreme:hover { background: rgba(230,57,70,0.12); }
+      .pp-profile-row { display: flex; gap: 6px; }
+      .pp-profile-row .pp-btn.full { flex: 1; }
+      .pp-profile-delete { flex-shrink: 0; padding: 14px 10px; color: var(--text-dim); }
+      .pp-profile-delete:hover { color: #e63946; border-color: #e63946; }
 
       /* Short viewports (phones in landscape) - the dancing rows are a nice
          touch but the title, welcome line, and buttons are what actually

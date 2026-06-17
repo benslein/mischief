@@ -4,7 +4,7 @@ import {
   FORMATION_2_3_1, ROSTER, UNLOCKABLE_ROSTER, VENUES, createBlankTeam,
 } from './data/gameData.js';
 import {
-  clearCurrentProfileName, getCurrentProfileName, listProfiles,
+  clearCurrentProfileName, deleteProfile, getCurrentProfileName, listProfiles,
   loadProfileData, saveProfileData, setCurrentProfileName,
 } from './utils/storage.js';
 import { buildTeamKit, PixelBall } from './utils/sprites.jsx';
@@ -92,6 +92,12 @@ export default function App() {
   function handleSwitchProfile() {
     clearCurrentProfileName();
     setProfileName(null);
+  }
+  function handleDeleteProfile(name) {
+    if (typeof window !== 'undefined' && !window.confirm(`Delete "${name}" and all of their teams? This cannot be undone.`)) return;
+    deleteProfile(name);
+    setProfiles(listProfiles());
+    if (profileName === name) setProfileName(null);
   }
 
   function handleCardClick(id) { setSelectedId((prev) => (prev === id ? null : id)); }
@@ -222,7 +228,7 @@ export default function App() {
     return (
       <div className="pp-app">
         <GlobalStyles />
-        <ProfileScreen profiles={profiles} onChooseProfile={handleChooseProfile} />
+        <ProfileScreen profiles={profiles} onChooseProfile={handleChooseProfile} onDeleteProfile={handleDeleteProfile} />
       </div>
     );
   }
