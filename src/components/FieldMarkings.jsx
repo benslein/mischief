@@ -75,6 +75,23 @@ export default function FieldMarkings({ W, H, venue = DEFAULT_VENUE_ID }) {
           {Array.from({ length: 24 }).map((_, i) => (
             <rect key={`bs2-${i}`} x={i * (W / 24)} y={H - 5} width={W / 24 - 0.6} height="4.5" fill={i % 4 === 0 ? '#ffd166' : i % 2 === 0 ? '#e63946' : '#f1faee'} />
           ))}
+          {/* Side stands - two packed columns of fans running the length of
+              each touchline, between the top and bottom stands, so the
+              crowd reads as hundreds strong rather than a thin accent. */}
+          {Array.from({ length: 60 }).map((_, i) => {
+            const rowH = (H - 28) / 60;
+            const y = 14 + i * rowH;
+            const color1 = i % 4 === 0 ? '#ffd166' : i % 2 === 0 ? '#e63946' : '#f1faee';
+            const color2 = i % 4 === 1 ? '#e63946' : i % 2 === 0 ? '#ffd166' : '#f1faee';
+            return (
+              <g key={`side-${i}`}>
+                <rect x="0" y={y} width="4" height={rowH - 0.4} fill={color1} />
+                <rect x="4.6" y={y} width="4" height={rowH - 0.4} fill={color2} />
+                <rect x={W - 4.6 - 4} y={y} width="4" height={rowH - 0.4} fill={color2} />
+                <rect x={W - 4} y={y} width="4" height={rowH - 0.4} fill={color1} />
+              </g>
+            );
+          })}
           {/* Scoreboard, centered above the top stands */}
           <rect x={W / 2 - 16} y="0" width="32" height="6" fill="#10122a" stroke="#ffd166" strokeWidth="0.6" />
           <rect x={W / 2 - 12} y="1.4" width="8" height="3.2" fill="#3fbf73" opacity="0.85" />
