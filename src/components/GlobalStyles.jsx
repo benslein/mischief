@@ -210,6 +210,31 @@ export default function GlobalStyles() {
       .pp-sidebar-inner::-webkit-scrollbar { width: 4px; }
       .pp-sidebar-inner::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 2px; }
 
+      /* On phone-width screens, the field/free-kick view and the question
+         sidebar stack instead of sitting side by side - the sidebar (with
+         the question text and buttons) goes on top, sized to its content,
+         and the field is pushed below it and given the rest of the
+         viewport so it reads as the main, much-larger element rather than
+         a panel squeezed beside a fixed-width sidebar. */
+      @media (max-width: 700px) {
+        .pp-main {
+          flex-direction: column;
+        }
+        .pp-sidebar {
+          order: -1;
+          width: 100%;
+          max-height: 38%;
+          border-left: none;
+          border-bottom: 3px solid var(--panel-border);
+        }
+        .pp-field-col,
+        .pp-fk-col {
+          flex: 1;
+          min-height: 0;
+          padding: 6px;
+        }
+      }
+
       /* ── SHARED TYPOGRAPHY ───────────────────────────────────────── */
       .pp-pixel { font-family: 'Press Start 2P', monospace; }
       .pp-hint { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
