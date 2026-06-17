@@ -7,7 +7,7 @@ import FieldMarkings from '../components/FieldMarkings.jsx';
    SQUAD SCREEN
    ========================================================================= */
 
-export default function SquadScreen({ assignments, selectedId, onCardClick, onSlotClick, onAutoFill, onClear, venue, onContinueToVenue, unlockedIds }) {
+export default function SquadScreen({ assignments, selectedId, onCardClick, onSlotClick, onAutoFill, onClear, venue, teamKit, onContinueToKit, unlockedIds }) {
   const assignedIds = new Set(Object.values(assignments));
   const unlocked = unlockedIds || [];
   const unlockedPlayers = UNLOCKABLE_ROSTER.filter((c) => unlocked.includes(c.id));
@@ -38,7 +38,7 @@ export default function SquadScreen({ assignments, selectedId, onCardClick, onSl
                 <ellipse cx={px} cy={py + 14} rx="20" ry="7" fill="rgba(0,0,0,0.25)" />
                 {char ? (
                   <g transform={`translate(${px - 6 * scale} ${py - 8 * scale}) scale(${scale})`}>
-                    {getSpriteRects(char.shape, kitColors(char.colors), char.eyeRow, char.mouthRow)}
+                    {getSpriteRects(char.shape, kitColors(char.colors, teamKit), char.eyeRow, char.mouthRow)}
                   </g>
                 ) : (
                   <>
@@ -79,15 +79,15 @@ export default function SquadScreen({ assignments, selectedId, onCardClick, onSl
                   return (
                     <div className="pp-lineup-row" key={slot.id}>
                       <span className="pp-lineup-pos">{slot.full}</span>
-                      <PixelSprite shape={player.shape} colors={kitColors(player.colors)} eyeRow={player.eyeRow} mouthRow={player.mouthRow} size={28} />
+                      <PixelSprite shape={player.shape} colors={kitColors(player.colors, teamKit)} eyeRow={player.eyeRow} mouthRow={player.mouthRow} size={28} />
                       <span className="pp-lineup-name">{player.name}</span>
                     </div>
                   );
                 })}
               </div>
-              {onContinueToVenue && (
-                <button className="pp-btn primary full" onClick={onContinueToVenue}>
-                  NEXT: CHOOSE HOME FIELD →
+              {onContinueToKit && (
+                <button className="pp-btn primary full" onClick={onContinueToKit}>
+                  NEXT: CHOOSE YOUR KIT →
                 </button>
               )}
               <hr className="pp-divider" />

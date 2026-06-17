@@ -15,7 +15,7 @@ import ChampionScreen from './ChampionScreen.jsx';
    free-kick loop, since the whole point is a focused, harder rep.
    ========================================================================= */
 
-export default function ExtremeModeScreen({ assignments, positionData, venue, onExit }) {
+export default function ExtremeModeScreen({ assignments, positionData, venue, teamKit, onExit }) {
   const W = 300, H = 440;
   const MAX_MISTAKES = 3;
   // Ball is auto-placed (shown correctly from the start of every
@@ -128,7 +128,7 @@ export default function ExtremeModeScreen({ assignments, positionData, venue, on
   const showField = phase === 'placing' || phase === 'feedback';
 
   if (phase === 'champion') {
-    return <ChampionScreen assignments={assignments} onPlayAgain={handleRestartRun} onExit={onExit} />;
+    return <ChampionScreen assignments={assignments} teamKit={teamKit} onPlayAgain={handleRestartRun} onExit={onExit} />;
   }
 
   return (
@@ -160,7 +160,7 @@ export default function ExtremeModeScreen({ assignments, positionData, venue, on
             handleFieldTap({ x: Math.max(1, Math.min(99, x)), y: Math.max(1, Math.min(99, y)) });
           }}>
             <FieldMarkings W={W} H={H} venue={venue} />
-            {fieldMarkers.map((m, i) => renderContextMarker(m, `placed-${i}`))}
+            {fieldMarkers.map((m, i) => renderContextMarker(m, `placed-${i}`, teamKit))}
             {tap && (() => {
               const px = (tap.x / 100) * W, py = (tap.y / 100) * H;
               const color = correct ? 'var(--accent-2)' : '#e63946';

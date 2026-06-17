@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { FORMATION_2_3_1, findPlayer } from '../data/gameData.js';
 import { startChampionFanfare } from '../utils/audio.js';
+import { kitColors } from '../utils/sprites.jsx';
 import Fireworks from '../components/Fireworks.jsx';
 import CelebratingPlayer from '../components/CelebratingPlayer.jsx';
 
@@ -13,7 +14,7 @@ import CelebratingPlayer from '../components/CelebratingPlayer.jsx';
    screen's theme song.
    ========================================================================= */
 
-export default function ChampionScreen({ assignments, onPlayAgain, onExit }) {
+export default function ChampionScreen({ assignments, teamKit, onPlayAgain, onExit }) {
   const themeRef = useRef(null);
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function ChampionScreen({ assignments, onPlayAgain, onExit }) {
       <p className="pp-champion-sub">All 8 situations. Every position. Zero excuses.</p>
       <div className="pp-celebration pp-champion-squad">
         {dancers.map((player, i) => (
-          <CelebratingPlayer key={player.id} player={player} size={56} delay={i * 0.07} />
+          <CelebratingPlayer key={player.id} player={player} size={56} delay={i * 0.07} kit={(colors) => kitColors(colors, teamKit)} />
         ))}
       </div>
       <div className="pp-intro-actions pp-champion-actions">

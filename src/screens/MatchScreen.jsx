@@ -12,7 +12,7 @@ import CelebratingPlayer from '../components/CelebratingPlayer.jsx';
    MATCH DAY SCREEN
    ========================================================================= */
 
-export default function MatchScreen({ assignments, positionData, questionBank, venue, onMatchComplete, record, newlyUnlocked, onDismissUnlock }) {
+export default function MatchScreen({ assignments, positionData, questionBank, venue, teamKit, onMatchComplete, record, newlyUnlocked, onDismissUnlock }) {
   const [score, setScore] = useState({ us: 0, them: 0 });
   const [streak, setStreak] = useState(0);
   const [minutesElapsed, setMinutesElapsed] = useState(0);
@@ -175,7 +175,7 @@ export default function MatchScreen({ assignments, positionData, questionBank, v
               {FORMATION_2_3_1.map((slot, i) => {
                 const player = findPlayer(assignments[slot.id]);
                 if (!player) return null;
-                return <CelebratingPlayer key={slot.id} player={player} size={52} delay={i * 0.08} />;
+                return <CelebratingPlayer key={slot.id} player={player} size={52} delay={i * 0.08} kit={(colors) => kitColors(colors, teamKit)} />;
               })}
             </div>
           )}
@@ -188,7 +188,7 @@ export default function MatchScreen({ assignments, positionData, questionBank, v
             handleTap({ x: Math.max(1, Math.min(99, x)), y: Math.max(1, Math.min(99, y)) });
           }}>
             <FieldMarkings W={W} H={H} venue={venue} />
-            {question.context && question.context.map((m, i) => renderContextMarker(m, `ctx-${i}`))}
+            {question.context && question.context.map((m, i) => renderContextMarker(m, `ctx-${i}`, teamKit))}
             {tap && (() => {
               const px = (tap.x / 100) * W, py = (tap.y / 100) * H;
               const color = correct ? 'var(--accent-2)' : '#e63946';
@@ -255,7 +255,7 @@ export default function MatchScreen({ assignments, positionData, questionBank, v
                 return (
                   <div className="pp-unlock-banner">
                     <p className="pp-pixel pp-unlock-title">NEW PLAYER UNLOCKED!</p>
-                    <PixelSprite shape={newPlayer.shape} colors={kitColors(newPlayer.colors)} eyeRow={newPlayer.eyeRow} mouthRow={newPlayer.mouthRow} size={64} />
+                    <PixelSprite shape={newPlayer.shape} colors={kitColors(newPlayer.colors, teamKit)} eyeRow={newPlayer.eyeRow} mouthRow={newPlayer.mouthRow} size={64} />
                     <p className="pp-unlock-name">{newPlayer.name}</p>
                     <p className="pp-unlock-tag">{newPlayer.tag}</p>
                     <p className="pp-hint">Find them on the bench in Squad.</p>

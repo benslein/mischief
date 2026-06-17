@@ -88,7 +88,7 @@ export function generateQuestion(assignments, positionData, questionBank) {
   };
 }
 
-export function renderContextMarker(marker, key) {
+export function renderContextMarker(marker, key, teamKit) {
   const W = 300, H = 440;
   const px = (marker.x / 100) * W;
   const py = (marker.y / 100) * H;
@@ -113,7 +113,7 @@ export function renderContextMarker(marker, key) {
     return (
       <g key={key}>
         <ellipse cx={px} cy={py + 10} rx="14" ry="5" fill="rgba(0,0,0,0.25)" />
-        <g transform={`translate(${px - 6 * scale} ${py - 8 * scale}) scale(${scale})`}>{getSpriteRects(marker.shape, kitColors(marker.colors), marker.eyeRow, marker.mouthRow)}</g>
+        <g transform={`translate(${px - 6 * scale} ${py - 8 * scale}) scale(${scale})`}>{getSpriteRects(marker.shape, kitColors(marker.colors, teamKit), marker.eyeRow, marker.mouthRow)}</g>
       </g>
     );
   }

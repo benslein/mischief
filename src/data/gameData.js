@@ -77,6 +77,26 @@ export const OPPONENT_COLORS = { H: '#3a1f1f', S: '#c98a5e', N: '#1d3557', J: '#
 export const FIXED = { K: '#262335', B: '#1a1a2e', M: '#3a1f1f', W: '#ffffff' };
 
 /* =========================================================================
+   KIT CUSTOMIZATION
+   Two independent choices - jersey color and shorts color - made on the
+   Kit Select screen (between Squad and Venue in the "Create a Team" flow)
+   and applied to every render of the player's own team for the rest of
+   the game. Trim color isn't chosen directly; it's derived from the
+   jersey pick so any combination still reads as a coherent uniform.
+   ========================================================================= */
+
+export const JERSEY_OPTIONS = [
+  { id: 'red', label: 'Red Top', color: '#e63946' },
+  { id: 'white', label: 'White Top', color: '#ffffff' },
+];
+export const SHORTS_OPTIONS = [
+  { id: 'white', label: 'White Shorts', color: '#ffffff' },
+  { id: 'red', label: 'Red Shorts', color: '#e63946' },
+];
+export const DEFAULT_JERSEY_ID = JERSEY_OPTIONS[0].id;
+export const DEFAULT_SHORTS_ID = SHORTS_OPTIONS[0].id;
+
+/* =========================================================================
    ROSTER DATA
    12 characters to choose from. `id` must stay unique and stable -
    Coach Mode and the quiz engine will reference players by this id.

@@ -12,7 +12,7 @@ import DancingRow from '../components/DancingRow.jsx';
    app, so it stays out of the way for kids just picking teams and playing.
    ========================================================================= */
 
-export default function IntroScreen({ teamName, hasFullSquad, record, onPickTeam, onPlayMatch, onQuickStart, onPlayExtreme }) {
+export default function IntroScreen({ teamName, hasFullSquad, record, teamKit, onPickTeam, onPlayMatch, onQuickStart, onPlayExtreme }) {
   const themeRef = useRef(null);
   const gamesPlayed = record.wins + record.losses + record.draws;
 
@@ -34,7 +34,7 @@ export default function IntroScreen({ teamName, hasFullSquad, record, onPickTeam
   return (
     <div className="pp-intro">
       <div className="pp-intro-content">
-        <DancingRow count={4} kit={kitColors} />
+        <DancingRow count={4} kit={(colors) => kitColors(colors, teamKit)} />
 
         <div className="pp-intro-card">
           <div className="pp-intro-balls">

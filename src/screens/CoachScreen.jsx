@@ -12,7 +12,7 @@ import QuestionBankList from '../components/coach/QuestionBankList.jsx';
    COACH SCREEN
    ========================================================================= */
 
-export default function CoachScreen({ positionData, onUpdatePosition, onResetSituation, questionBank, onSaveQuestion, onDeleteQuestion, onImportCoachData, venue }) {
+export default function CoachScreen({ positionData, onUpdatePosition, onResetSituation, questionBank, onSaveQuestion, onDeleteQuestion, onImportCoachData, venue, teamKit }) {
   const [coachTab, setCoachTab] = useState('positions');
   const [situationId, setSituationId] = useState(SITUATIONS[0].id);
   const [selectedSlot, setSelectedSlot] = useState('gk');
@@ -178,7 +178,7 @@ export default function CoachScreen({ positionData, onUpdatePosition, onResetSit
             })()}
           </svg>
         ) : editingQuestion ? (
-          <EditField context={context} zones={zones} pendingCorner={zoneCorner} onTap={handleEditFieldTap} />
+          <EditField context={context} zones={zones} pendingCorner={zoneCorner} teamKit={teamKit} onTap={handleEditFieldTap} />
         ) : (
           <div className="pp-field-empty-state">
             <p className="pp-hint">Select a question from the list, or add a new one, to edit it on the field.</p>

@@ -1,4 +1,4 @@
-import { BASE_SHAPES, FIXED } from '../data/gameData.js';
+import { BASE_SHAPES, FIXED, JERSEY_OPTIONS, SHORTS_OPTIONS, DEFAULT_JERSEY_ID, DEFAULT_SHORTS_ID } from '../data/gameData.js';
 
 export function mirrorRow(row) {
   return row + row.split('').reverse().join('');
@@ -38,12 +38,23 @@ function PixelSprite({ shape, colors, eyeRow, mouthRow, size = 80 }) {
   );
 }
 
-// Unified team kit shown on the field/Match Day - red jersey, white trim and
-// shorts. Hair, skin, and accessories stay per-character so players are
-// still recognizable; only the kit colors are overridden.
-const TEAM_KIT = { J: '#e63946', C: '#ffffff', P: '#ffffff' };
-export function kitColors(colors) {
-  return { ...colors, ...TEAM_KIT };
+// Builds a {J, C, P} kit object from the Kit Select screen's jersey/shorts
+// picks. Trim always contrasts with the jersey (red jersey -> white trim,
+// white jersey -> red trim) so every combination still looks like a real
+// uniform rather than a clash.
+export function buildTeamKit(jerseyId = DEFAULT_JERSEY_ID, shortsId = DEFAULT_SHORTS_ID) {
+  const jersey = JERSEY_OPTIONS.find((j) => j.id === jerseyId) || JERSEY_OPTIONS[0];
+  const shorts = SHORTS_OPTIONS.find((s) => s.id === shortsId) || SHORTS_OPTIONS[0];
+  const trim = jersey.color === '#ffffff' ? '#e63946' : '#ffffff';
+  return { J: jersey.color, C: trim, P: shorts.color };
+}
+
+// Default kit (red top, white shorts) used wherever a caller doesn't pass
+// its own selected kit. Hair, skin, and accessories stay per-character so
+// players are still recognizable; only the kit colors are overridden.
+const DEFAULT_TEAM_KIT = buildTeamKit();
+export function kitColors(colors, kit = DEFAULT_TEAM_KIT) {
+  return { ...colors, ...kit };
 }
 
 // Blue "other team" kit for friendly/celebratory scenes (e.g. the intro

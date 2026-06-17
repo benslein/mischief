@@ -9,7 +9,7 @@ import FieldMarkings from '../FieldMarkings.jsx';
    tab's set-play data - their wording is templated, not edited here.
    ========================================================================= */
 
-export default function EditField({ context, zones, pendingCorner, onTap }) {
+export default function EditField({ context, zones, pendingCorner, teamKit, onTap }) {
   const W = 300, H = 440;
   function handleClick(e) {
     const { x, y } = fieldClickToPercent(e, W, H);
@@ -25,7 +25,7 @@ export default function EditField({ context, zones, pendingCorner, onTap }) {
         const h = ((z.yMax - z.yMin) / 100) * H;
         return <rect key={`z-${i}`} x={x} y={y} width={w} height={h} fill="var(--accent-2)" opacity="0.25" stroke="var(--accent-2)" strokeWidth="2" strokeDasharray="4 3" />;
       })}
-      {context.map((m, i) => renderContextMarker(m, `ctx-${i}`))}
+      {context.map((m, i) => renderContextMarker(m, `ctx-${i}`, teamKit))}
       {pendingCorner && (() => {
         const px = (pendingCorner.x / 100) * W;
         const py = (pendingCorner.y / 100) * H;

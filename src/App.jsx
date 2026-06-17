@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import {
-  DEFAULT_POSITION_DATA, DEFAULT_QUESTION_BANK, DEFAULT_VENUE_ID,
+  DEFAULT_JERSEY_ID, DEFAULT_POSITION_DATA, DEFAULT_QUESTION_BANK, DEFAULT_SHORTS_ID, DEFAULT_VENUE_ID,
   FORMATION_2_3_1, ROSTER, UNLOCKABLE_ROSTER, VENUES,
 } from './data/gameData.js';
 import { loadJSON, saveJSON } from './utils/storage.js';
-import { PixelBall } from './utils/sprites.jsx';
+import { buildTeamKit, PixelBall } from './utils/sprites.jsx';
 import GlobalStyles from './components/GlobalStyles.jsx';
 import IntroScreen from './screens/IntroScreen.jsx';
 import TeamNameScreen from './screens/TeamNameScreen.jsx';
+import KitScreen from './screens/KitScreen.jsx';
 import VenueScreen from './screens/VenueScreen.jsx';
 import SquadScreen from './screens/SquadScreen.jsx';
 import CoachScreen from './screens/CoachScreen.jsx';
@@ -27,12 +28,15 @@ export default function App() {
   const [positionData, setPositionData] = useState({});
   const [questionBank, setQuestionBank] = useState(DEFAULT_QUESTION_BANK);
   const [venue, setVenue] = useState(DEFAULT_VENUE_ID);
+  const [jerseyId, setJerseyId] = useState(DEFAULT_JERSEY_ID);
+  const [shortsId, setShortsId] = useState(DEFAULT_SHORTS_ID);
   const [record, setRecord] = useState({ wins: 0, losses: 0, draws: 0 });
   const [unlockedIds, setUnlockedIds] = useState([]);
   // Set right when a win triggers a fresh unlock, so MatchScreen's full-time
   // panel can show "NEW PLAYER UNLOCKED!" for that one player. Cleared again
   // on the next match restart so it doesn't linger into a future win.
   const [newlyUnlocked, setNewlyUnlocked] = useState(null);
+  const teamKit = buildTeamKit(jerseyId, shortsId);
 
   useEffect(() => {
     (async () => {
@@ -41,6 +45,8 @@ export default function App() {
         if (squad.teamName) setTeamName(squad.teamName);
         if (squad.assignments) setAssignments(squad.assignments);
         if (squad.venue) setVenue(squad.venue);
+        if (squad.jerseyId) setJerseyId(squad.jerseyId);
+        if (squad.shortsId) setShortsId(squad.shortsId);
       }
       const positions = await loadJSON('coach-positions', DEFAULT_POSITION_DATA);
       setPositionData(positions);
@@ -54,7 +60,7 @@ export default function App() {
     })();
   }, []);
 
-  useEffect(() => { if (!loaded) return; saveJSON('squad', { teamName, assignments, venue }); }, [loaded, teamName, assignments, venue]);
+  useEffect(() => { if (!loaded) return; saveJSON('squad', { teamName, assignments, venue, jerseyId, shortsId }); }, [loaded, teamName, assignments, venue, jerseyId, shortsId]);
   useEffect(() => { if (!loaded) return; saveJSON('coach-positions', positionData); }, [loaded, positionData]);
   useEffect(() => { if (!loaded) return; saveJSON('question-bank', questionBank); }, [loaded, questionBank]);
   useEffect(() => { if (!loaded) return; saveJSON('team-record', record); }, [loaded, record]);
@@ -91,6 +97,8 @@ export default function App() {
     setTeamName('');
     setAssignments({});
     setSelectedId(null);
+    setJerseyId(DEFAULT_JERSEY_ID);
+    setShortsId(DEFAULT_SHORTS_ID);
     setScreen('create_name');
   }
 
@@ -175,6 +183,7 @@ export default function App() {
           teamName={teamName}
           hasFullSquad={hasFullSquad}
           record={record}
+          teamKit={teamKit}
           onPickTeam={handleStartCreateTeam}
           onPlayMatch={() => setScreen('match')}
           onQuickStart={handleQuickStart}
@@ -198,6 +207,22 @@ export default function App() {
     );
   }
 
+  if (screen === 'create_kit') {
+    return (
+      <div className="pp-app">
+        <GlobalStyles />
+        <KitScreen
+          jerseyId={jerseyId}
+          shortsId={shortsId}
+          onSelectJersey={setJerseyId}
+          onSelectShorts={setShortsId}
+          onContinue={() => setScreen('create_venue')}
+          onBack={() => setScreen('create_squad')}
+        />
+      </div>
+    );
+  }
+
   if (screen === 'create_venue') {
     return (
       <div className="pp-app">
@@ -206,7 +231,7 @@ export default function App() {
           selectedVenueId={venue}
           onSelectVenue={setVenue}
           onContinue={() => setScreen('match')}
-          onBack={() => setScreen('create_squad')}
+          onBack={() => setScreen('create_kit')}
         />
       </div>
     );
@@ -262,7 +287,8 @@ export default function App() {
           onAutoFill={handleAutoFill}
           onClear={handleClear}
           venue={venue}
-          onContinueToVenue={screen === 'create_squad' ? () => setScreen('create_venue') : null}
+          teamKit={teamKit}
+          onContinueToKit={screen === 'create_squad' ? () => setScreen('create_kit') : null}
           unlockedIds={unlockedIds}
         />
       )}
@@ -277,15 +303,16 @@ export default function App() {
           onDeleteQuestion={handleDeleteQuestion}
           onImportCoachData={handleImportCoachData}
           venue={venue}
+          teamKit={teamKit}
         />
       )}
 
       {screen === 'match' && (
-        <MatchScreen assignments={assignments} positionData={positionData} questionBank={questionBank} venue={venue} onMatchComplete={handleMatchComplete} record={record} newlyUnlocked={newlyUnlocked} onDismissUnlock={() => setNewlyUnlocked(null)} />
+        <MatchScreen assignments={assignments} positionData={positionData} questionBank={questionBank} venue={venue} teamKit={teamKit} onMatchComplete={handleMatchComplete} record={record} newlyUnlocked={newlyUnlocked} onDismissUnlock={() => setNewlyUnlocked(null)} />
       )}
 
       {screen === 'extreme' && (
-        <ExtremeModeScreen assignments={assignments} positionData={positionData} venue={venue} onExit={() => setScreen('match')} />
+        <ExtremeModeScreen assignments={assignments} positionData={positionData} venue={venue} teamKit={teamKit} onExit={() => setScreen('match')} />
       )}
     </div>
   );
