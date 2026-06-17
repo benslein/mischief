@@ -188,7 +188,7 @@ export default function MatchScreen({ assignments, positionData, questionBank, v
             handleTap({ x: Math.max(1, Math.min(99, x)), y: Math.max(1, Math.min(99, y)) });
           }}>
             <FieldMarkings W={W} H={H} venue={venue} />
-            {question.context && question.context.map((m, i) => renderContextMarker(m, `ctx-${i}`, teamKit))}
+            {question.context && question.context.map((m, i) => renderContextMarker(m, `ctx-${i}`, teamKit, venue))}
             {tap && (() => {
               const px = (tap.x / 100) * W, py = (tap.y / 100) * H;
               const color = correct ? 'var(--accent-2)' : '#e63946';

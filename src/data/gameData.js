@@ -1906,6 +1906,12 @@ export const VENUES = [
     name: 'Springton Lake',
     blurb: "A scrappy lakeside field. Grass is patchy but the view isn't bad.",
   },
+  {
+    id: 'rainbow_field',
+    name: 'Rainbow Field',
+    blurb: 'The Extreme Mode trophy field. Every color, all at once.',
+    unlock: 'beatExtreme',
+  },
 ];
 export const DEFAULT_VENUE_ID = VENUES[0].id;
 

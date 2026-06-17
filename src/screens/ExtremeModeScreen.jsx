@@ -15,9 +15,13 @@ import ChampionScreen from './ChampionScreen.jsx';
    free-kick loop, since the whole point is a focused, harder rep.
    ========================================================================= */
 
-export default function ExtremeModeScreen({ assignments, positionData, venue, teamKit, onExit, onBeatExtreme }) {
+export default function ExtremeModeScreen({ assignments, positionData, venue, teamKit, onExit, onBeatExtreme, beatExtreme }) {
   const W = 300, H = 440;
   const MAX_MISTAKES = 3;
+  // Captured once at mount, before this run's onBeatExtreme() call can flip
+  // the team's flag - lets the champion screen tell a first-time win
+  // (which unlocks Rainbow Field) apart from a repeat one.
+  const [wasAlreadyBeaten] = useState(beatExtreme);
   // Ball is auto-placed (shown correctly from the start of every
   // situation) - only the 7 outfield/GK slots are actually placed by the
   // player, and ALL 7 must be correct before the situation counts as
@@ -129,7 +133,15 @@ export default function ExtremeModeScreen({ assignments, positionData, venue, te
   const showField = phase === 'placing' || phase === 'feedback';
 
   if (phase === 'champion') {
-    return <ChampionScreen assignments={assignments} teamKit={teamKit} onPlayAgain={handleRestartRun} onExit={onExit} />;
+    return (
+      <ChampionScreen
+        assignments={assignments}
+        teamKit={teamKit}
+        onPlayAgain={handleRestartRun}
+        onExit={onExit}
+        newlyUnlockedField={!wasAlreadyBeaten}
+      />
+    );
   }
 
   return (
@@ -161,7 +173,7 @@ export default function ExtremeModeScreen({ assignments, positionData, venue, te
             handleFieldTap({ x: Math.max(1, Math.min(99, x)), y: Math.max(1, Math.min(99, y)) });
           }}>
             <FieldMarkings W={W} H={H} venue={venue} />
-            {fieldMarkers.map((m, i) => renderContextMarker(m, `placed-${i}`, teamKit))}
+            {fieldMarkers.map((m, i) => renderContextMarker(m, `placed-${i}`, teamKit, venue))}
             {tap && (() => {
               const px = (tap.x / 100) * W, py = (tap.y / 100) * H;
               const color = correct ? 'var(--accent-2)' : '#e63946';

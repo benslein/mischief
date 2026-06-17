@@ -20,6 +20,10 @@ import CoachScreen from './screens/CoachScreen.jsx';
 import MatchScreen from './screens/MatchScreen.jsx';
 import ExtremeModeScreen from './screens/ExtremeModeScreen.jsx';
 
+// Quick Start teams haven't played anything yet, so they only draw from
+// venues nobody has to unlock first.
+const UNLOCKED_VENUES = VENUES.filter((v) => !v.unlock);
+
 /* =========================================================================
    APP
    ========================================================================= */
@@ -161,7 +165,7 @@ export default function App() {
       id: 'quick-start',
       teamName: 'QUICK START',
       assignments: next,
-      venue: VENUES[Math.floor(Math.random() * VENUES.length)].id,
+      venue: UNLOCKED_VENUES[Math.floor(Math.random() * UNLOCKED_VENUES.length)].id,
     });
     setActiveTeamId(null);
     setScreen('match');
@@ -305,6 +309,23 @@ export default function App() {
           onSelectVenue={(id) => updateActiveTeam((t) => ({ ...t, venue: id }))}
           onContinue={() => setScreen('match')}
           onBack={() => setScreen('create_kit')}
+          beatExtreme={activeTeam?.beatExtreme}
+        />
+      </div>
+    );
+  }
+
+  if (screen === 'change_venue') {
+    return (
+      <div className="pp-app">
+        <GlobalStyles />
+        <VenueScreen
+          selectedVenueId={activeTeam?.venue}
+          onSelectVenue={(id) => updateActiveTeam((t) => ({ ...t, venue: id }))}
+          onContinue={() => setScreen('squad')}
+          onBack={() => setScreen('squad')}
+          beatExtreme={activeTeam?.beatExtreme}
+          continueLabel="DONE"
         />
       </div>
     );
@@ -362,6 +383,7 @@ export default function App() {
           venue={activeTeam.venue}
           teamKit={teamKit}
           onContinueToKit={screen === 'create_squad' ? () => setScreen('create_kit') : null}
+          onChangeVenue={screen === 'squad' ? () => setScreen('change_venue') : null}
           unlockedIds={activeTeam.unlockedIds}
         />
       )}
@@ -402,6 +424,7 @@ export default function App() {
           teamKit={teamKit}
           onExit={() => setScreen('match')}
           onBeatExtreme={handleBeatExtreme}
+          beatExtreme={activeTeam.beatExtreme}
         />
       )}
     </div>

@@ -88,10 +88,15 @@ export function generateQuestion(assignments, positionData, questionBank) {
   };
 }
 
-export function renderContextMarker(marker, key, teamKit) {
+export function renderContextMarker(marker, key, teamKit, venue) {
   const W = 300, H = 440;
   const px = (marker.x / 100) * W;
   const py = (marker.y / 100) * H;
+  // Rainbow Field's stripes cycle through every hue, so any single kit or
+  // ball color is bound to clash with one of them somewhere on the pitch -
+  // a solid dark disc behind each sprite gives every color a neutral
+  // backdrop to stand out against, regardless of which stripe it lands on.
+  const isRainbow = venue === 'rainbow_field';
 
   // Ball/player/attacker/defender markers render a recognizable sprite on
   // their own, so a floating "Ball" / "Teammate" / "OTHER TEAM" caption
@@ -103,6 +108,7 @@ export function renderContextMarker(marker, key, teamKit) {
     const scale = 2.5;
     return (
       <g key={key}>
+        {isRainbow && <circle cx={px} cy={py} r="13" fill="rgba(10,12,30,0.55)" />}
         <g transform={`translate(${px - 4 * scale} ${py - 4 * scale}) scale(${scale})`}>{getBallRects()}</g>
       </g>
     );
@@ -113,6 +119,7 @@ export function renderContextMarker(marker, key, teamKit) {
     return (
       <g key={key}>
         <ellipse cx={px} cy={py + 10} rx="14" ry="5" fill="rgba(0,0,0,0.25)" />
+        {isRainbow && <circle cx={px} cy={py - 4} r="15" fill="rgba(10,12,30,0.55)" />}
         <g transform={`translate(${px - 6 * scale} ${py - 8 * scale}) scale(${scale})`}>{getSpriteRects(marker.shape, kitColors(marker.colors, teamKit), marker.eyeRow, marker.mouthRow)}</g>
       </g>
     );
@@ -123,6 +130,7 @@ export function renderContextMarker(marker, key, teamKit) {
     return (
       <g key={key}>
         <ellipse cx={px} cy={py + 10} rx="14" ry="5" fill="rgba(0,0,0,0.25)" />
+        {isRainbow && <circle cx={px} cy={py - 4} r="15" fill="rgba(10,12,30,0.55)" />}
         <g transform={`translate(${px - 6 * scale} ${py - 8 * scale}) scale(${scale})`}>{getSpriteRects(OPPONENT_SHAPE, OPPONENT_COLORS, EYE_ANGRY, MOUTH_SCOWL)}</g>
       </g>
     );

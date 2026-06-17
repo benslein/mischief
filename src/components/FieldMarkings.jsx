@@ -4,9 +4,42 @@ import { DEFAULT_VENUE_ID } from '../data/gameData.js';
    FIELD MARKINGS (shared by Squad field and Coach field)
    ========================================================================= */
 
+const RAINBOW_STRIPES = ['#e63946', '#f3722c', '#ffd166', '#43aa8b', '#277da1', '#5e60ce', '#9b5de5'];
+
+// All pitch-line markings (boundary, center circle, goal boxes, build-out
+// lines), parameterized by stroke so they can be rendered twice for the
+// rainbow field: a black halo underneath, then a white core on top. That
+// double pass is what keeps the lines readable no matter which rainbow
+// stripe colors happen to sit behind them - a single line color can
+// contrast with a green field, but no single color contrasts with all
+// seven rainbow hues at once.
+function Markings({ W, H, color, opacity, lineW, goalBarH, buildOutColor }) {
+  return (
+    <>
+      <rect x="10" y="10" width={W - 20} height={H - 20} fill="none" stroke={color} strokeWidth={lineW} opacity={opacity} />
+      <line x1="10" y1={H / 2} x2={W - 10} y2={H / 2} stroke={color} strokeWidth={lineW} opacity={opacity} />
+      <circle cx={W / 2} cy={H / 2} r="40" fill="none" stroke={color} strokeWidth={lineW} opacity={opacity} />
+      <circle cx={W / 2} cy={H / 2} r="2.5" fill={color} opacity={opacity} />
+      <line x1="10" y1="147.5" x2={W - 10} y2="147.5" stroke={buildOutColor} strokeWidth={lineW} strokeDasharray="6 4" opacity={opacity * 0.85} />
+      <line x1="10" y1="292.5" x2={W - 10} y2="292.5" stroke={buildOutColor} strokeWidth={lineW} strokeDasharray="6 4" opacity={opacity * 0.85} />
+      {/* opponent's goal (top) */}
+      <rect x="70" y="10" width="160" height="65" fill="none" stroke={color} strokeWidth={lineW} opacity={opacity} />
+      <rect x="115" y="10" width="70" height="28" fill="none" stroke={color} strokeWidth={lineW} opacity={opacity} />
+      <path d="M 120 75 A 30 30 0 0 0 180 75" fill="none" stroke={color} strokeWidth={lineW} opacity={opacity} />
+      <rect x="130" y="4" width="40" height={goalBarH} fill={color} opacity={opacity} />
+      {/* own goal (bottom) */}
+      <rect x="70" y={H - 75} width="160" height="65" fill="none" stroke={color} strokeWidth={lineW} opacity={opacity} />
+      <rect x="115" y={H - 38} width="70" height="28" fill="none" stroke={color} strokeWidth={lineW} opacity={opacity} />
+      <path d={`M 120 ${H - 75} A 30 30 0 0 1 180 ${H - 75}`} fill="none" stroke={color} strokeWidth={lineW} opacity={opacity} />
+      <rect x="130" y={H - 10} width="40" height={goalBarH} fill={color} opacity={opacity} />
+    </>
+  );
+}
+
 export default function FieldMarkings({ W, H, venue = DEFAULT_VENUE_ID }) {
   const stripes = 8;
   const stripeH = H / stripes;
+  const isRainbow = venue === 'rainbow_field';
 
   // Per-venue palette. Elementary School is asphalt (no grass stripes at
   // all - flat gray with painted-court-style lines). Springton Lake swaps
@@ -18,16 +51,25 @@ export default function FieldMarkings({ W, H, venue = DEFAULT_VENUE_ID }) {
     sleighton_field: { g1: '#7a9650', g2: '#6c8a46', line: '#e8e4d8', lineOpacity: 0.9 },
     elementary_school: { g1: '#5a5d63', g2: '#52555a', line: '#ffd166', lineOpacity: 0.95 },
     vacant_lot: { g1: '#9c8259', g2: '#8a7049', line: '#d8cfb8', lineOpacity: 0.55 },
+    rainbow_field: { line: '#ffffff', lineOpacity: 1 },
   };
   const pal = PALETTES[venue] || PALETTES[DEFAULT_VENUE_ID];
   const isBlacktop = venue === 'elementary_school';
 
   return (
     <>
-      <rect x="0" y="0" width={W} height={H} fill={pal.g2} />
-      {!isBlacktop && Array.from({ length: stripes }).map((_, i) => (
-        i % 2 === 0 && <rect key={i} x="0" y={i * stripeH} width={W} height={stripeH} fill={pal.g1} />
-      ))}
+      {isRainbow ? (
+        Array.from({ length: stripes }).map((_, i) => (
+          <rect key={i} x="0" y={i * stripeH} width={W} height={stripeH} fill={RAINBOW_STRIPES[i % RAINBOW_STRIPES.length]} />
+        ))
+      ) : (
+        <>
+          <rect x="0" y="0" width={W} height={H} fill={pal.g2} />
+          {!isBlacktop && Array.from({ length: stripes }).map((_, i) => (
+            i % 2 === 0 && <rect key={i} x="0" y={i * stripeH} width={W} height={stripeH} fill={pal.g1} />
+          ))}
+        </>
+      )}
 
       {/* Elementary School: flat asphalt with a few faint crack lines and
           patched-resurface blotches, instead of mown-grass stripes. */}
@@ -120,23 +162,17 @@ export default function FieldMarkings({ W, H, venue = DEFAULT_VENUE_ID }) {
         </g>
       )}
 
-      <rect x="10" y="10" width={W - 20} height={H - 20} fill="none" stroke={pal.line} strokeWidth="2" opacity={pal.lineOpacity} />
-      <line x1="10" y1={H / 2} x2={W - 10} y2={H / 2} stroke={pal.line} strokeWidth="2" opacity={pal.lineOpacity} />
-      <circle cx={W / 2} cy={H / 2} r="40" fill="none" stroke={pal.line} strokeWidth="2" opacity={pal.lineOpacity} />
-      <circle cx={W / 2} cy={H / 2} r="2.5" fill={pal.line} opacity={pal.lineOpacity} />
-      {/* build-out lines (midway between each goal box arc and the center circle) */}
-      <line x1="10" y1="147.5" x2={W - 10} y2="147.5" stroke="var(--accent)" strokeWidth="2" strokeDasharray="6 4" opacity="0.6" />
-      <line x1="10" y1="292.5" x2={W - 10} y2="292.5" stroke="var(--accent)" strokeWidth="2" strokeDasharray="6 4" opacity="0.6" />
-      {/* opponent's goal (top) */}
-      <rect x="70" y="10" width="160" height="65" fill="none" stroke={pal.line} strokeWidth="2" opacity={pal.lineOpacity} />
-      <rect x="115" y="10" width="70" height="28" fill="none" stroke={pal.line} strokeWidth="2" opacity={pal.lineOpacity} />
-      <path d="M 120 75 A 30 30 0 0 0 180 75" fill="none" stroke={pal.line} strokeWidth="2" opacity={pal.lineOpacity} />
-      <rect x="130" y="4" width="40" height="6" fill={pal.line} opacity={pal.lineOpacity} />
-      {/* own goal (bottom) */}
-      <rect x="70" y={H - 75} width="160" height="65" fill="none" stroke={pal.line} strokeWidth="2" opacity={pal.lineOpacity} />
-      <rect x="115" y={H - 38} width="70" height="28" fill="none" stroke={pal.line} strokeWidth="2" opacity={pal.lineOpacity} />
-      <path d={`M 120 ${H - 75} A 30 30 0 0 1 180 ${H - 75}`} fill="none" stroke={pal.line} strokeWidth="2" opacity={pal.lineOpacity} />
-      <rect x="130" y={H - 10} width="40" height="6" fill={pal.line} opacity={pal.lineOpacity} />
+      {isRainbow && (
+        <Markings W={W} H={H} color="#000000" opacity={0.9} lineW={4} goalBarH={8} buildOutColor="#000000" />
+      )}
+      <Markings
+        W={W} H={H}
+        color={pal.line}
+        opacity={pal.lineOpacity}
+        lineW={2}
+        goalBarH={6}
+        buildOutColor={isRainbow ? '#ffffff' : 'var(--accent)'}
+      />
     </>
   );
 }

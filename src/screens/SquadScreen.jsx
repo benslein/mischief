@@ -7,7 +7,7 @@ import FieldMarkings from '../components/FieldMarkings.jsx';
    SQUAD SCREEN
    ========================================================================= */
 
-export default function SquadScreen({ assignments, selectedId, onCardClick, onSlotClick, onAutoFill, onClear, venue, teamKit, onContinueToKit, unlockedIds }) {
+export default function SquadScreen({ assignments, selectedId, onCardClick, onSlotClick, onAutoFill, onClear, venue, teamKit, onContinueToKit, onChangeVenue, unlockedIds }) {
   const assignedIds = new Set(Object.values(assignments));
   const unlocked = unlockedIds || [];
   const unlockedPlayers = UNLOCKABLE_ROSTER.filter((c) => unlocked.includes(c.id));
@@ -20,6 +20,7 @@ export default function SquadScreen({ assignments, selectedId, onCardClick, onSl
     .map((c, i) => ({ ...c, winsToGo: i + 1 }));
   const filledCount = Object.keys(assignments).length;
   const selectedPlayer = findPlayer(selectedId);
+  const isRainbow = venue === 'rainbow_field';
 
   return (
     <div className="pp-main">
@@ -37,9 +38,12 @@ export default function SquadScreen({ assignments, selectedId, onCardClick, onSl
               <g key={slot.id} className="pp-slot" onClick={() => onSlotClick(slot.id)}>
                 <ellipse cx={px} cy={py + 14} rx="20" ry="7" fill="rgba(0,0,0,0.25)" />
                 {char ? (
-                  <g transform={`translate(${px - 6 * scale} ${py - 8 * scale}) scale(${scale})`}>
-                    {getSpriteRects(char.shape, kitColors(char.colors, teamKit), char.eyeRow, char.mouthRow)}
-                  </g>
+                  <>
+                    {isRainbow && <circle cx={px} cy={py - 6} r="22" fill="rgba(10,12,30,0.55)" />}
+                    <g transform={`translate(${px - 6 * scale} ${py - 8 * scale}) scale(${scale})`}>
+                      {getSpriteRects(char.shape, kitColors(char.colors, teamKit), char.eyeRow, char.mouthRow)}
+                    </g>
+                  </>
                 ) : (
                   <>
                     <circle cx={px} cy={py} r="16" fill="rgba(255,255,255,0.08)" stroke="var(--field-line)" strokeWidth="1.5" strokeDasharray="3 3" />
@@ -58,6 +62,7 @@ export default function SquadScreen({ assignments, selectedId, onCardClick, onSl
           <div className="pp-squad-hdr">
             <span className="pp-progress"><strong>{filledCount}</strong> / 7 FILLED</span>
             <div className="pp-action-bar">
+              {onChangeVenue && <button className="pp-btn" onClick={onChangeVenue}>🏟 FIELD</button>}
               <button className="pp-btn" onClick={onAutoFill}><Shuffle size={12} /> AUTO</button>
               <button className="pp-btn" onClick={onClear}><RotateCcw size={12} /> CLEAR</button>
             </div>

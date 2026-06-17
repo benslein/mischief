@@ -155,6 +155,10 @@ export default function GlobalStyles() {
       }
       .pp-venue-card:hover { border-color: var(--text-dim); }
       .pp-venue-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(255,209,102,0.35); }
+      .pp-venue-card-locked { cursor: not-allowed; position: relative; }
+      .pp-venue-card-locked:hover { border-color: var(--panel-border); }
+      .pp-venue-card-locked .pp-venue-thumb { filter: brightness(0.5) grayscale(0.6); }
+      .pp-venue-card-locked .pp-venue-name { color: var(--text-dim); }
       .pp-venue-thumb { width: 100%; aspect-ratio: 300 / 440; max-height: 160px; display: block; border-radius: 4px; }
       .pp-venue-name { font-weight: 800; font-size: 13px; color: var(--text); }
       .pp-venue-blurb { font-size: 11px; color: var(--text-dim); line-height: 1.4; }

@@ -14,7 +14,7 @@ import CelebratingPlayer from '../components/CelebratingPlayer.jsx';
    screen's theme song.
    ========================================================================= */
 
-export default function ChampionScreen({ assignments, teamKit, onPlayAgain, onExit }) {
+export default function ChampionScreen({ assignments, teamKit, onPlayAgain, onExit, newlyUnlockedField }) {
   const themeRef = useRef(null);
 
   useEffect(() => {
@@ -44,6 +44,13 @@ export default function ChampionScreen({ assignments, teamKit, onPlayAgain, onEx
           <CelebratingPlayer key={player.id} player={player} size={56} delay={i * 0.07} kit={(colors) => kitColors(colors, teamKit)} />
         ))}
       </div>
+      {newlyUnlockedField && (
+        <div className="pp-unlock-banner" style={{ position: 'relative', zIndex: 6 }}>
+          <p className="pp-pixel pp-unlock-title">🌈 NEW HOME FIELD UNLOCKED!</p>
+          <p className="pp-unlock-name">Rainbow Field</p>
+          <p className="pp-hint">Find it in Squad → 🏟 FIELD.</p>
+        </div>
+      )}
       <div className="pp-intro-actions pp-champion-actions">
         <button className="pp-btn primary full" onClick={() => handleSelect(onPlayAgain)}>PLAY AGAIN</button>
         <button className="pp-btn full" onClick={() => handleSelect(onExit)}>BACK TO MATCH</button>
